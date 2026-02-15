@@ -1,5 +1,47 @@
 @import "@xyflow/react/dist/style.css";
 
+/* ── Theme variables ── */
+
+:root {
+  --bg-canvas: #f8f8fc;
+  --bg-node: #ffffff;
+  --bg-node-hover-shadow: rgba(99, 102, 241, 0.35);
+  --bg-node-shadow: rgba(99, 102, 241, 0.2);
+  --border-node: #6366f1;
+  --border-node-hover: #818cf8;
+  --text-node: #1e1b4b;
+  --handle-border: #fff;
+  --bg-picker: #ffffff;
+  --border-picker: #e2e2e2;
+  --picker-shadow: rgba(0, 0, 0, 0.12);
+  --emoji-hover: #f0f0ff;
+  --emoji-custom-border: #e5e7eb;
+  --text-muted: #a1a1aa;
+  --bg-grid-dot: #ddd;
+  --edge-stroke: #6366f1;
+  --minimap-bg: #f0f0f4;
+}
+
+[data-theme="dark"] {
+  --bg-canvas: #0f0f1a;
+  --bg-node: #1e1e2e;
+  --bg-node-hover-shadow: rgba(129, 140, 248, 0.3);
+  --bg-node-shadow: rgba(129, 140, 248, 0.15);
+  --border-node: #818cf8;
+  --border-node-hover: #a5b4fc;
+  --text-node: #e2e0f0;
+  --handle-border: #1e1e2e;
+  --bg-picker: #1e1e2e;
+  --border-picker: #2e2e42;
+  --picker-shadow: rgba(0, 0, 0, 0.4);
+  --emoji-hover: #2a2a40;
+  --emoji-custom-border: #3a3a52;
+  --text-muted: #6b6b80;
+  --bg-grid-dot: #2a2a3a;
+  --edge-stroke: #818cf8;
+  --minimap-bg: #16162a;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -13,34 +55,62 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
 }
 
+/* ── React Flow canvas background ── */
+
+[data-theme] .react-flow {
+  background: var(--bg-canvas);
+}
+
+[data-theme="dark"] .react-flow__background pattern circle {
+  fill: var(--bg-grid-dot);
+}
+
+[data-theme="dark"] .react-flow__edge path {
+  stroke: var(--edge-stroke);
+}
+
+[data-theme="dark"] .react-flow__minimap {
+  background: var(--minimap-bg);
+}
+
+[data-theme="dark"] .react-flow__controls button {
+  background: #1e1e2e;
+  border-color: #2e2e42;
+  fill: #c4c4dc;
+}
+
+[data-theme="dark"] .react-flow__controls button:hover {
+  background: #2a2a40;
+}
+
 /* ── Circle Node ── */
 
 .circle-node {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #6366f1;
+  background: var(--bg-node);
+  border: 2px solid var(--border-node);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 2px 8px var(--bg-node-shadow);
   transition: box-shadow 0.15s, border-color 0.15s;
   position: relative;
   overflow: visible;
 }
 
 .circle-node:hover {
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
-  border-color: #818cf8;
+  box-shadow: 0 4px 16px var(--bg-node-hover-shadow);
+  border-color: var(--border-node-hover);
 }
 
 .circle-node .circle-handle {
   width: 8px;
   height: 8px;
-  background: #6366f1;
-  border: 2px solid #fff;
+  background: var(--border-node);
+  border: 2px solid var(--handle-border);
 }
 
 .circle-node-label {
@@ -54,7 +124,7 @@ body {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   user-select: none;
-  color: #1e1b4b;
+  color: var(--text-node);
 }
 
 .circle-node-placeholder {
@@ -81,7 +151,7 @@ body {
   background: transparent;
   resize: none;
   line-height: 1.3;
-  color: #1e1b4b;
+  color: var(--text-node);
   font-family: inherit;
 }
 
@@ -106,14 +176,14 @@ body {
 }
 
 .emoji-picker {
-  background: #fff;
-  border: 1px solid #e2e2e2;
+  background: var(--bg-picker);
+  border: 1px solid var(--border-picker);
   border-radius: 10px;
   padding: 8px;
   width: 240px;
   max-height: 300px;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px var(--picker-shadow);
 }
 
 .emoji-group {
@@ -130,6 +200,10 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+[data-theme="dark"] .emoji-group-label {
+  color: #a5b4fc;
 }
 
 .emoji-grid {
@@ -154,11 +228,11 @@ body {
 }
 
 .emoji-btn:hover {
-  background: #f0f0ff;
+  background: var(--emoji-hover);
 }
 
 .emoji-btn-custom {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--emoji-custom-border);
 }
 
 .emoji-btn-custom img {
@@ -202,7 +276,7 @@ body {
 
 .emoji-empty {
   font-size: 10px;
-  color: #a1a1aa;
+  color: var(--text-muted);
   padding: 4px;
 }
 
@@ -210,5 +284,31 @@ body {
 
 .react-flow__node.selected .circle-node {
   border-color: #4f46e5;
-  box-shadow: 0 0 0 2px #6366f1, 0 4px 16px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 0 2px #6366f1, 0 4px 16px var(--bg-node-hover-shadow);
+}
+
+/* ── Theme Toggle Button ── */
+
+.theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border-node);
+  background: var(--bg-node);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px var(--bg-node-shadow);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--border-node-hover);
+  box-shadow: 0 4px 16px var(--bg-node-hover-shadow);
 }

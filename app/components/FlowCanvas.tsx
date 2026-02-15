@@ -15,6 +15,7 @@ import {
 } from "@xyflow/react";
 import { useFlowStore } from "../store";
 import CircleNode from "./CircleNode";
+import ThemeToggle from "./ThemeToggle";
 
 const nodeTypes = { circle: CircleNode };
 
@@ -86,10 +87,13 @@ function Flow() {
 }
 
 export default function FlowCanvas() {
+  const darkMode = useFlowStore((s) => s.darkMode);
+
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div data-theme={darkMode ? "dark" : "light"} style={{ width: "100vw", height: "100vh" }}>
       <ReactFlowProvider>
         <Flow />
+        <ThemeToggle />
       </ReactFlowProvider>
     </div>
   );

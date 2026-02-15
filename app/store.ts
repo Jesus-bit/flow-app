@@ -24,12 +24,14 @@ export type FlowState = {
   nodes: Node[];
   edges: Edge[];
   customEmojis: CustomEmoji[];
+  darkMode: boolean;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   addNode: (position: { x: number; y: number }) => void;
   updateNodeLabel: (nodeId: string, label: string) => void;
   deleteEdge: (edgeId: string) => void;
+  toggleDarkMode: () => void;
   addCustomEmoji: (emoji: CustomEmoji) => void;
   removeCustomEmoji: (emojiId: string) => void;
 };
@@ -47,6 +49,7 @@ export const useFlowStore = create<FlowState>()(
       nodes: [],
       edges: [],
       customEmojis: [],
+      darkMode: true,
       onNodesChange: (changes: NodeChange[]) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
       },
@@ -75,6 +78,9 @@ export const useFlowStore = create<FlowState>()(
       deleteEdge: (edgeId: string) => {
         set({ edges: get().edges.filter((e) => e.id !== edgeId) });
       },
+      toggleDarkMode: () => {
+        set({ darkMode: !get().darkMode });
+      },
       addCustomEmoji: (emoji: CustomEmoji) => {
         set({ customEmojis: [...get().customEmojis, emoji] });
       },
@@ -86,16 +92,18 @@ export const useFlowStore = create<FlowState>()(
     }),
     {
       name: "flow-storage",
-      version: 2,
+      version: 3,
       migrate: () => ({
         nodes: [],
         edges: [],
         customEmojis: [],
+        darkMode: true,
       }),
       partialize: (state) => ({
         nodes: state.nodes,
         edges: state.edges,
         customEmojis: state.customEmojis,
+        darkMode: state.darkMode,
       }),
     }
   )
