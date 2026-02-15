@@ -9,6 +9,7 @@ import {
   type OnNodesChange,
   type OnEdgesChange,
   type OnConnect,
+  type Edge,
   useReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
@@ -35,8 +36,9 @@ function Flow() {
     []
   );
 
-  const onDoubleClick = useCallback(
-    (event: React.MouseEvent) => {
+  const onPaneContextMenu = useCallback(
+    (event: MouseEvent | React.MouseEvent) => {
+      event.preventDefault();
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -44,6 +46,13 @@ function Flow() {
       useFlowStore.getState().addNode(position);
     },
     [screenToFlowPosition]
+  );
+
+  const onEdgeClick = useCallback(
+    (_event: React.MouseEvent, edge: Edge) => {
+      useFlowStore.getState().deleteEdge(edge.id);
+    },
+    []
   );
 
   const defaultEdgeOptions = useMemo(
@@ -59,7 +68,8 @@ function Flow() {
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
-      onDoubleClick={onDoubleClick}
+      onEdgeClick={onEdgeClick}
+      onPaneContextMenu={onPaneContextMenu}
       defaultEdgeOptions={defaultEdgeOptions}
       fitView
       deleteKeyCode={["Backspace", "Delete"]}

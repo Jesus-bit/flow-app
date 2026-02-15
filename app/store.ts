@@ -29,6 +29,7 @@ export type FlowState = {
   onConnect: OnConnect;
   addNode: (position: { x: number; y: number }) => void;
   updateNodeLabel: (nodeId: string, label: string) => void;
+  deleteEdge: (edgeId: string) => void;
   addCustomEmoji: (emoji: CustomEmoji) => void;
   removeCustomEmoji: (emojiId: string) => void;
 };
@@ -70,6 +71,9 @@ export const useFlowStore = create<FlowState>()(
             n.id === nodeId ? { ...n, data: { ...n.data, label } } : n
           ),
         });
+      },
+      deleteEdge: (edgeId: string) => {
+        set({ edges: get().edges.filter((e) => e.id !== edgeId) });
       },
       addCustomEmoji: (emoji: CustomEmoji) => {
         set({ customEmojis: [...get().customEmojis, emoji] });
