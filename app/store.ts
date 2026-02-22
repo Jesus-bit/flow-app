@@ -12,7 +12,8 @@ import {
   Connection,
 } from "@xyflow/react";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { syncStorage, registerRehydrate } from "@/lib/sync-storage";
 
 // ── Types ──
 
@@ -98,8 +99,9 @@ export type FlowState = {
   beliefDetails: Record<string, BeliefDetail>;
   customEmojis: CustomEmoji[];
   darkMode: boolean;
+  _lastModified: number;
 
-  // Navigation
+  // Navigation (no persistido)
   currentView: ViewState;
   navigateTo: (view: ViewState) => void;
 
@@ -154,6 +156,7 @@ function updateSectorCanvas(
       ...state.sectorCanvases,
       [sectorId]: updater(current),
     },
+    _lastModified: Date.now(),
   };
 }
 
@@ -168,6 +171,7 @@ export const useFlowStore = create<FlowState>()(
       beliefDetails: {},
       customEmojis: [],
       darkMode: true,
+      _lastModified: 0,
 
       // Navigation
       currentView: { view: "sectors" } as ViewState,
@@ -179,6 +183,7 @@ export const useFlowStore = create<FlowState>()(
           sectors: get().sectors.map((s) =>
             s.id === id ? { ...s, name } : s
           ),
+          _lastModified: Date.now(),
         });
       },
       moveSector: (id: string, position: { x: number; y: number }) => {
@@ -186,6 +191,7 @@ export const useFlowStore = create<FlowState>()(
           sectors: get().sectors.map((s) =>
             s.id === id ? { ...s, position } : s
           ),
+          _lastModified: Date.now(),
         });
       },
 
@@ -257,6 +263,7 @@ export const useFlowStore = create<FlowState>()(
               ? { [nodeId]: { ...state.beliefDetails[nodeId], title: label } }
               : {}),
           },
+          _lastModified: Date.now(),
         });
       },
       deleteEdge: (edgeId: string) => {
@@ -298,6 +305,7 @@ export const useFlowStore = create<FlowState>()(
         const updated = { ...existing, ...detail };
         set({
           beliefDetails: { ...state.beliefDetails, [nodeId]: updated },
+          _lastModified: Date.now(),
         });
 
         // If title changed, also update node label in canvas
@@ -319,18 +327,21 @@ export const useFlowStore = create<FlowState>()(
       },
 
       // Global actions
-      toggleDarkMode: () => set({ darkMode: !get().darkMode }),
+      toggleDarkMode: () =>
+        set({ darkMode: !get().darkMode, _lastModified: Date.now() }),
       addCustomEmoji: (emoji: CustomEmoji) => {
-        set({ customEmojis: [...get().customEmojis, emoji] });
+        set({ customEmojis: [...get().customEmojis, emoji], _lastModified: Date.now() });
       },
       removeCustomEmoji: (emojiId: string) => {
         set({
           customEmojis: get().customEmojis.filter((e) => e.id !== emojiId),
+          _lastModified: Date.now(),
         });
       },
     }),
     {
       name: "flow-storage",
+      storage: createJSONStorage(() => syncStorage),
       version: 6,
       migrate: (persisted: unknown, version: number) => {
         if (version < 4) {
@@ -354,6 +365,7 @@ export const useFlowStore = create<FlowState>()(
             customEmojis: old.customEmojis || [],
             darkMode: old.darkMode ?? true,
             currentView: { view: "sectors" },
+            _lastModified: 0,
           };
         }
         if (version === 4) {
@@ -383,10 +395,9 @@ export const useFlowStore = create<FlowState>()(
               turnarounds: "",
             };
           }
-          return { ...old, beliefDetails: newDetails };
+          return { ...old, beliefDetails: newDetails, _lastModified: 0 };
         }
         if (version === 5) {
-          // Add inquiry fields to existing belief details
           const old = persisted as Record<string, unknown>;
           const oldDetails = (old.beliefDetails || {}) as Record<string, Record<string, unknown>>;
           const newDetails: Record<string, unknown> = {};
@@ -404,7 +415,7 @@ export const useFlowStore = create<FlowState>()(
               turnarounds: detail.turnarounds || "",
             };
           }
-          return { ...old, beliefDetails: newDetails };
+          return { ...old, beliefDetails: newDetails, _lastModified: 0 };
         }
         return persisted as Record<string, unknown>;
       },
@@ -414,7 +425,15 @@ export const useFlowStore = create<FlowState>()(
         beliefDetails: state.beliefDetails,
         customEmojis: state.customEmojis,
         darkMode: state.darkMode,
+        _lastModified: state._lastModified,
       }),
     }
   )
 );
+
+// Registrar callback de rehidratación para sync-storage
+if (typeof window !== "undefined") {
+  registerRehydrate("flow-storage", () => {
+    void useFlowStore.persist.rehydrate();
+  });
+}

@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    platform: linux/arm64
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - API_SECRET=${API_SECRET}
+      - DATABASE_PATH=/data/app-state.db
+      - NODE_ENV=production
+    volumes:
+      - /mnt/usb/data:/data   # Monta el USB donde va SQLite
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
